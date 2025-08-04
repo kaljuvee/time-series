@@ -110,7 +110,15 @@ try:
     with col2:
         st.markdown("**Dataset Information:**")
         st.write(f"**Shape:** {data.shape}")
-        st.write(f"**Columns:** {list(data.columns)}")
+        
+        # Handle both Series and DataFrame cases
+        if isinstance(data, pd.Series):
+            st.write(f"**Variable:** {data.name if data.name else 'Unnamed'}")
+            st.write(f"**Type:** Time Series (pandas Series)")
+        else:
+            st.write(f"**Columns:** {list(data.columns)}")
+            st.write(f"**Type:** Time Series (pandas DataFrame)")
+            
         st.write(f"**Date Range:** {data.index.min()} to {data.index.max()}")
         st.write(f"**Frequency:** {data.index.freq if hasattr(data.index, 'freq') else 'Not specified'}")
     
@@ -118,11 +126,20 @@ try:
     st.markdown("### 📈 Dataset Visualization")
     
     fig = go.Figure()
+    
+    # Handle both Series and DataFrame cases
+    if isinstance(data, pd.Series):
+        y_values = data.values
+        series_name = data.name if data.name else 'Value'
+    else:
+        y_values = data.iloc[:, 0].values
+        series_name = data.columns[0]
+    
     fig.add_trace(go.Scatter(
         x=data.index,
-        y=data.iloc[:, 0],
+        y=y_values,
         mode='lines+markers',
-        name=data.columns[0],
+        name=series_name,
         line=dict(color='#1f77b4', width=2),
         marker=dict(size=4)
     ))
@@ -207,8 +224,14 @@ try:
                     # Basic statistical tests
                     from scipy import stats
                     
+                    # Get the values for statistical tests (handle both Series and DataFrame)
+                    if isinstance(data, pd.Series):
+                        test_values = data.values
+                    else:
+                        test_values = data.iloc[:, 0].values
+                    
                     # Normality test
-                    stat, p_value = stats.normaltest(data.iloc[:, 0])
+                    stat, p_value = stats.normaltest(test_values)
                     st.write(f"**Normality Test (D'Agostino K^2):**")
                     st.write(f"  - Statistic: {stat:.4f}")
                     st.write(f"  - P-value: {p_value:.4f}")
@@ -216,7 +239,7 @@ try:
                     
                     # Stationarity test (ADF)
                     from statsmodels.tsa.stattools import adfuller
-                    adf_result = adfuller(data.iloc[:, 0])
+                    adf_result = adfuller(test_values)
                     st.write(f"**Augmented Dickey-Fuller Test:**")
                     st.write(f"  - ADF Statistic: {adf_result[0]:.4f}")
                     st.write(f"  - P-value: {adf_result[1]:.4f}")
