@@ -135,8 +135,16 @@ try:
         y_values = data.iloc[:, 0].values
         series_name = data.columns[0]
     
+    # Convert Period index to datetime for JSON serialization
+    if hasattr(data.index, 'to_timestamp'):
+        # Period index - convert to timestamp
+        x_values = data.index.to_timestamp()
+    else:
+        # Already datetime or other serializable index
+        x_values = data.index
+    
     fig.add_trace(go.Scatter(
-        x=data.index,
+        x=x_values,
         y=y_values,
         mode='lines+markers',
         name=series_name,
