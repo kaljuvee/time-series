@@ -191,11 +191,10 @@ try:
                     "Session ID": get_config('seed'),
                     "Forecast Horizon": fh,
                     "Fold Strategy": fold_strategy,
-                    "Original Data Shape": get_config('data_before_preprocess').shape,
+                    "Original Data Shape": get_config('data').shape,
                     "Transformed Train Set Shape": get_config('y_train_transformed').shape,
                     "Transformed Test Set Shape": get_config('y_test_transformed').shape,
-                    "Target Variable": get_config('target'),
-                    "Approach": "Univariate" if len(data.columns) == 1 else "Multivariate"
+                    "Approach": "Univariate" if isinstance(data, pd.Series) else "Multivariate"
                 }
                 
                 # Display config in a nice format
